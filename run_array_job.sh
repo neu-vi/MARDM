@@ -14,6 +14,6 @@ ARRAY_SPEC="0-$(($N_TASKS - 1))%${MAX_CONCURRENT}"
 echo "Submitting array: ${ARRAY_SPEC}"
 echo "    SHARD_SIZE=${SHARD_SIZE}"
 
-#sbatch --export=ALL,SHARD_SIZE="$SHARD_SIZE" --array="${ARRAY_SPEC}" runner.slurm
+sbatch --export=ALL,SHARD_SIZE="$SHARD_SIZE" --array="${ARRAY_SPEC}" runner.slurm
 #awk -F, 'NR>1 {print int($1/437)}' missing_outputs.csv | sort -n | uniq
-sbatch --export=ALL,SHARD_SIZE=437 --array="38,89,136,144%4" runner.slurm
+#sbatch --export=ALL,SHARD_SIZE=437 --array="38,89,136,144%4" runner.slurm

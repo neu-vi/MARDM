@@ -32,4 +32,4 @@ echo "[START TIME]: ${now}"
 echo "[GPU]: ${gpuname}"
 echo "======================================"
 
-$PYTHON_EX sample.py --name "$NAME" --shard_size "$SHARD_SIZE" --shard_index "$SLURM_ARRAY_TASK_ID" --descriptions --batch_size 1
+$PYTHON_EX sample.py --name "$NAME" --shard_size "$SHARD_SIZE" --shard_index "$SLURM_ARRAY_TASK_ID" --descriptions --batch_size 8
