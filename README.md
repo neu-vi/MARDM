@@ -57,6 +57,8 @@ We test our code on Python 3.10.13, PyTorch 2.2.0, and CUDA 12.1
 
 ### 2. Models and Dependencies
 
+Due to the deactivation of the previous Google account, we have migrated all model files to [Hugging Face](https://huggingface.co/collections/cr8br0ze/mardm).
+
 #### Download Evaluation Models
 ```bash
 rm -rf checkpoints
@@ -65,9 +67,12 @@ cd checkpoints
 mkdir t2m
 mkdir kit
 
-cd t2m 
+cd t2m
 echo -e "Downloading evaluation models for HumanML3D dataset"
-gdown --fuzzy https://drive.google.com/file/d/1ejiz4NvyuoTj3BIdfNrTFFZBZ-zq4oKD/view?usp=sharing
+wget -c \
+  "https://huggingface.co/cr8br0ze/evaluators_humanml3d/resolve/main/evaluators_humanml3d.zip" \
+  -O evaluators_humanml3d.zip
+
 echo -e "Unzipping humanml3d evaluators"
 unzip evaluators_humanml3d.zip
 
@@ -76,7 +81,9 @@ rm evaluators_humanml3d.zip
 
 cd ../kit/
 echo -e "Downloading pretrained models for KIT-ML dataset"
-gdown --fuzzy https://drive.google.com/file/d/1kobWYZdWRyfTfBj5YR_XYopg9YZLdfYh/view?usp=sharing
+wget -c \
+  "https://huggingface.co/cr8br0ze/evaluators_kit/resolve/main/evaluators_kit.zip" \
+  -O evaluators_kit.zip
 
 echo -e "Unzipping kit evaluators"
 unzip evaluators_kit.zip
@@ -104,10 +111,18 @@ echo -e "Downloading done!"
 ```bash
 cd checkpoints/t2m
 echo -e "Downloading pretrained models for HumanML3D dataset"
-gdown --fuzzy https://drive.google.com/file/d/1TBybFByAd-kD4AuFgMyR3ZBt4VV43Sif/view?usp=sharing
-gdown --fuzzy https://drive.google.com/file/d/1csjlxi0uOhfPPEwiThsR0gaj7_VDmgb6/view?usp=sharing
-gdown --fuzzy https://drive.google.com/file/d/1nWoEcN4rEFKi4Xyf_ObKinDmSQNPKXgU/view?usp=sharing
-gdown --fuzzy https://drive.google.com/file/d/1nfX_j8VzMmynqKv8x68pXrsL3c0qWLXA/view?usp=sharing
+wget -c \
+  "https://huggingface.co/cr8br0ze/MARDM_SiT_XL/resolve/main/MARDM_SiT_XL.zip" \
+  -O MARDM_SiT_XL.zip
+wget -c \
+  "https://huggingface.co/cr8br0ze/MARDM_DDPM_XL/resolve/main/MARDM_DDPM_XL.zip" \
+  -O MARDM_DDPM_XL.zip
+wget -c \
+  "https://huggingface.co/cr8br0ze/length_estimator/resolve/main/length_estimator.zip" \
+  -O length_estimator.zip
+wget -c \
+  "https://huggingface.co/cr8br0ze/AE_humanml3d/resolve/main/AE_humanml3d.zip" \
+  -O AE_humanml3d.zip
 echo -e "Unzipping"
 unzip MARDM_SiT_XL.zip
 unzip MARDM_DDPM_XL.zip
