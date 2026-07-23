@@ -194,7 +194,7 @@ dependencies:
       - bash-kernel==0.9.3
       - bleach==6.2.0
       - chumpy==0.70
-      - clip==1.0
+      - git+https://github.com/openai/CLIP.git
       - comm==0.2.2
       - cycler==0.12.1
       - debugpy==1.8.8
@@ -238,7 +238,7 @@ dependencies:
       - jupyterlab-widgets==3.0.13
       - kiwisolver==1.4.7
       - markdown==3.7
-      - matplotlib==3.1.3
+      - matplotlib==3.8.4
       - mistune==3.0.2
       - nbclient==0.10.0
       - nbconvert==7.16.4

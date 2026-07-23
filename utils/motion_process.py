@@ -2,6 +2,7 @@ import torch
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+from matplotlib.animation import FFMpegWriter
 from matplotlib.animation import FuncAnimation
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import mpl_toolkits.mplot3d.axes3d as p3
@@ -113,6 +114,9 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), f
         ax.set_xlim3d([-radius / 2, radius / 2])
         ax.set_ylim3d([0, radius])
         ax.set_zlim3d([0, radius])
+        #ax.set_xlim3d([-5, 5])
+        #ax.set_ylim3d([0, 10])
+        #ax.set_zlim3d([-5, 5])
         fig.suptitle(title, fontsize=20)
         ax.grid(b=False)
 
@@ -126,10 +130,11 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), f
         xz_plane = Poly3DCollection([verts])
         xz_plane.set_facecolor((0.5, 0.5, 0.5, 0.5))
         ax.add_collection3d(xz_plane)
+        return xz_plane
 
     data = joints.copy().reshape(len(joints), -1, 3)
     fig = plt.figure(figsize=figsize)
-    ax = p3.Axes3D(fig)
+    ax = fig.add_subplot(111, projection = '3d')
     init()
     MINS = data.min(axis=0).min(axis=0)
     MAXS = data.max(axis=0).max(axis=0)
@@ -145,33 +150,41 @@ def plot_3d_motion(save_path, kinematic_tree, joints, title, figsize=(10, 10), f
     data[..., 0] -= data[:, 0:1, 0]
     data[..., 2] -= data[:, 0:1, 2]
 
+    drawn_lines = []
+    drawn_cols = []
+
     def update(index):
-        ax.lines = []
-        ax.collections = []
+        nonlocal drawn_lines, drawn_cols
+        for ln in drawn_lines:
+            ln.remove()
+        for col in drawn_cols:
+            col.remove()
+        drawn_lines = []
+        drawn_cols = []
         ax.view_init(elev=120, azim=-90)
         ax.dist = 7.5
-        plot_xzPlane(MINS[0] - trajec[index, 0], MAXS[0] - trajec[index, 0], 0, MINS[2] - trajec[index, 1],
+        plane = plot_xzPlane(MINS[0] - trajec[index, 0], MAXS[0] - trajec[index, 0], 0, MINS[2] - trajec[index, 1],
                      MAXS[2] - trajec[index, 1])
-
+        if plane is not None:
+            drawn_cols.append(plane)
         if index > 1:
-            ax.plot3D(trajec[:index, 0] - trajec[index, 0], np.zeros_like(trajec[:index, 0]),
+            (ln,) = ax.plot3D(trajec[:index, 0] - trajec[index, 0], np.zeros_like(trajec[:index, 0]),
                       trajec[:index, 1] - trajec[index, 1], linewidth=1.0,
                       color='blue')
+            drawn_lines.append(ln)
 
         for i, (chain, color) in enumerate(zip(kinematic_tree, colors)):
             if i < 5:
                 linewidth = 4.0
             else:
                 linewidth = 2.0
-            ax.plot3D(data[index, chain, 0], data[index, chain, 1], data[index, chain, 2], linewidth=linewidth,
+            (ln,) = ax.plot3D(data[index, chain, 0], data[index, chain, 1], data[index, chain, 2], linewidth=linewidth,
                       color=color)
+            drawn_lines.append(ln)
+        return drawn_lines + drawn_cols
 
-        plt.axis('off')
-        ax.set_xticklabels([])
-        ax.set_yticklabels([])
-        ax.set_zticklabels([])
+    ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False, blit=False)
 
-    ani = FuncAnimation(fig, update, frames=frame_number, interval=1000 / fps, repeat=False)
-
-    ani.save(save_path, fps=fps)
+    writer = FFMpegWriter(fps = fps, codec = "mpeg4")
+    ani.save(save_path, writer = writer)
     plt.close()

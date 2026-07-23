@@ -1,0 +1,24 @@
+#!/bin/bash
+
+## njobstr stores "njobs {RUNNING, PENDING}"
+njobstr=$(squeue --me -h -t $1 -r -O "state" | uniq -c | xargs)
+read -ra arr <<<$njobstr
+njobs="${arr[0]}"
+
+## handle edge case were if no jobs, then njobs holds empty string
+if [[ $(echo -n $njobs | wc -c) -eq 0 ]]; then
+    ## set njobs to "0"
+    njobs="0"
+fi
+
+RUNNING_FMT="%.18i %.9P %.20j %.8u %.2t %.10M %.20e %.6D %R"
+PENDING_FMT="%.18i %.9P %.20j %.8u %.2t %.19S %.6D %20Y %R"
+
+printf "${1^} ($njobs):\n"
+if [[ $1 == 'running' ]]; then
+    squeue --me --format="$RUNNING_FMT" --sort=i --states=RUNNING
+elif [[ $1 == 'pending' ]]; then
+    squeue --me --format="$PENDING_FMT" --sort=S --states=PENDING
+fi
+printf "\n"
+

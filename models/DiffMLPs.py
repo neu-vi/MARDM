@@ -290,11 +290,48 @@ class SimpleMLPAdaLN(nn.Module):
         return self.final_layer(x, y)
 
     def forward_with_cfg(self, x, t, c, cfg_scale):
-        half = x[: len(x) // 2]
-        combined = torch.cat([half, half], dim=0)
-        model_out = self.forward(combined, t, c)
-        eps, rest = model_out[:, :self.in_channels], model_out[:, self.in_channels:]
-        cond_eps, uncond_eps = torch.split(eps, len(eps) // 2, dim=0)
-        half_eps = uncond_eps + cfg_scale * (cond_eps - uncond_eps)
-        eps = torch.cat([half_eps, half_eps], dim=0)
+        # Need at least 2 samples to do cond/uncond splitting.
+        n = x.shape[0]
+        if n < 2:
+            # Not enough batch to do CFG; just run unconditional/regular forward.
+            return self.forward(x, t, c)
+
+        half_n = n // 2
+        if half_n == 0:
+            return self.forward(x, t, c)
+
+        # Use only the first half of x, then duplicate it.
+        x_half = x[:half_n]
+        combined_x = torch.cat([x_half, x_half], dim=0)
+
+        # Build conditioning for [cond, uncond] aligned with combined_x.
+        # Expect c to be [cond, uncond] already. If it isn't long enough, fall back.
+        if c is None:
+            # Shouldn't happen in your setup, but be safe.
+            c_cond = torch.zeros(half_n, self.cond_embed.in_features, device=x.device, dtype=x.dtype)
+            c_uncond = torch.zeros_like(c_cond)
+        else:
+            # If c has at least 2*half_n rows, treat first half as cond, second as uncond.
+            if c.shape[0] >= 2 * half_n:
+                c_cond = c[:half_n]
+                c_uncond = c[half_n:2 * half_n]
+            else:
+                # If c isn't in [cond, uncond] form, degrade gracefully:
+                # treat available rows as "cond" and make uncond zeros.
+                c_cond = c[:half_n]
+                c_uncond = torch.zeros_like(c_cond)
+
+        combined_c = torch.cat([c_cond, c_uncond], dim=0)
+
+        model_out = self.forward(combined_x, t, combined_c)
+
+        eps = model_out[:, :self.in_channels]
+        rest = model_out[:, self.in_channels:]
+
+        cond_eps = eps[:half_n]
+        uncond_eps = eps[half_n:2 * half_n]
+
+        guided = uncond_eps + cfg_scale * (cond_eps - uncond_eps)
+        eps = torch.cat([guided, guided], dim=0)
+
         return torch.cat([eps, rest], dim=1)
