@@ -1,4 +1,4 @@
-# Rethinking Diffusion for Text-Driven Human Motion Generation (CVPR 2025)
+# Rethinking Diffusion for Text-Driven Human Motion Generation: Redundant Representations, Evaluation, and Masked Autoregression (CVPR 2025)
 ![](./MARDM.png)
 
 <p align="center">
